@@ -1,0 +1,119 @@
+//Essa função cria um novo elemento
+function novoElemento(tagName, className) {
+    const elem = document.createElement(tagName); //è passado uma string para ser cirado
+    elem.className = className // define o atributo passado para elem por meio 
+    return elem
+}
+
+
+//função construtora que representa uma barreira
+//de acordo com o parametro ele add aborda e depois o corpo
+//e vice-versa
+function Barreira(reversa = false) {
+    this.elemento = novoElemento('div', 'barreira')
+
+    const borda = novoElemento('div', 'borda')
+    const corpo = novoElemento('div', 'corpo')
+    this.elemento.appendChild(reversa ? corpo : borda)
+    this.elemento.appendChild(reversa ? borda : corpo)
+
+    //Define a Altura da barreira
+    this.setAltura = altura => corpo.style.height = `${altura}px`
+}
+
+// const b = new Barreira(true)
+// b.setAltura(300)
+// document.querySelector('[wm-flappy]').appendChild(b.elemento)
+
+
+
+//Par de barreiras que tem as barreiras superior e inferior
+function ParDeBarreiras(altura, abertura, x) {
+    this.elemento = novoElemento('div', 'par-de-barreiras')
+
+    this.superior = new Barreira(true);
+    this.inferior = new Barreira(false);
+
+    this.elemento.appendChild(this.superior.elemento);
+    this.elemento.appendChild(this.inferior.elemento);
+
+    //essa função sorteia o espaço entre as duas barreiras
+    this.sortearAbertura = () => {
+        const alturaSuperior = Math.random() * (altura - abertura)
+        const alturaInferior = altura - abertura - alturaSuperior
+        this.superior.setAltura(alturaSuperior)
+        this.inferior.setAltura(alturaInferior)
+    }
+
+    //Essas 3 funções manipula as informações do elemento
+    this.getX = () => {
+            parseInt(this.elemento.style.left.split('px')[0])
+        }
+
+    this.setX = (x) => {
+        this.elemento.style.left = `${x}px`
+    }
+
+    this.getLargura = () =>{
+        this.elemento.clientWidth
+    }
+
+    this.sortearAbertura()// inicia as barreiras na tela.
+    this.setX(x) //Defini a posição que as barreiras aparecem na tela.
+}
+
+// const b = new ParDeBarreiras(700, 200, 800);
+// document.querySelector('[wm-flappy]').appendChild(b.elemento);
+
+
+
+
+// ========> Segunda parte 2º <========
+
+function Barreiras(altura, largura, abertura, espaco, notificarPonto) {
+    this.pares = [
+        new ParDeBarreiras(altura, abertura, largura),
+        new ParDeBarreiras(altura, abertura, largura + espaco),
+        new ParDeBarreiras(altura, abertura, largura + espaco * 2),
+        new ParDeBarreiras(altura, abertura, largura + espaco * 3)
+    ]
+
+    const deslocamento = 3
+    this.animar = () => {
+        this.pares.forEach(par => {
+            par.setX(par.getX() - deslocamento)
+
+            // quando o elemento sair da área do jogo
+            if (par.getX() < -par.getLargura()) {
+                par.setX(par.getX() + espaco * this.pares.length)
+                par.sortearAbertura()
+            }
+
+            const meio = largura / 2
+            const cruzouOMeio = par.getX() + deslocamento >= meio
+                && par.getX() < meio
+            if(cruzouOMeio){ 
+                notificarPonto()
+            }
+        })
+    }
+}
+
+// const barreiras = new Barreiras(700, 1200, 200, 400);
+// const areaDoJogo = document.querySelector('[wm-flappy]')
+// barreiras.pares.forEach(par => {
+//     areaDoJogo.appendChild(par.elemento)
+// })
+
+
+// setInterval(() => {
+//     barreiras.animar();
+// }, 20);
+
+
+// const barreiras = new Barreiras(700, 1200, 200, 400)
+// const areaDoJogo = document.querySelector('[wm-flappy]')
+// barreiras.pares.forEach(par => areaDoJogo.appendChild(par.elemento))
+// setInterval(() => {
+//     barreiras.animar()
+// }, 20)
